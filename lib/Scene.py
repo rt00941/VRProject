@@ -36,7 +36,7 @@ class Scene:
         spotlight.Falloff.value = 0.7
         spotlight.Transform.value = avango.gua.make_trans_mat(0.0, 20.0, 0.0) * \
             avango.gua.make_rot_mat(-90, 1, 0, 0) * \
-            avango.gua.make_scale_mat(30.0)
+            avango.gua.make_scale_mat(300.0)
         self.scenegraph.Root.value.Children.value.append(spotlight)
 
     # adds the floor geometry to the scenegraph's root node
