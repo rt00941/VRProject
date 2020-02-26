@@ -24,19 +24,21 @@ class Scene:
 
         # build scene content
         self.build_light()
-        self.build_floor()
+        #self.build_floor()
+        self.build_scene()
         #self.build_objects()
+
 
     # adds a light to the scenegraph's root node
     def build_light(self):
         spotlight = avango.gua.nodes.LightNode(Name='spotlight')
         spotlight.Type.value = avango.gua.LightType.SPOT
         spotlight.Color.value = avango.gua.Color(1.0, 1.0, 0.9)
-        spotlight.Brightness.value = 20.0
+        spotlight.Brightness.value = 30.0
         spotlight.Falloff.value = 0.7
-        spotlight.Transform.value = avango.gua.make_trans_mat(0.0, 20.0, 0.0) * \
+        spotlight.Transform.value = avango.gua.make_trans_mat(0.0, 400.0, 0.0) * \
             avango.gua.make_rot_mat(-90, 1, 0, 0) * \
-            avango.gua.make_scale_mat(300.0)
+            avango.gua.make_scale_mat(1000.0)
         self.scenegraph.Root.value.Children.value.append(spotlight)
 
     # adds the floor geometry to the scenegraph's root node
@@ -74,6 +76,16 @@ class Scene:
             self.scenegraph.Root.value.Children.value.append(piece)
         file_handle.close()
 
+    def build_scene(self):
+        scene = self.loader.create_geometry_from_file('scene',
+                                                      'data/objects/town/town.obj',
+                                                      avango.gua.LoaderFlags.LOAD_MATERIALS |
+                                                      avango.gua.LoaderFlags.MAKE_PICKABLE)
+        self.apply_material_uniform_recursively(scene, 'Emissivity', 0.5)
+        self.apply_material_uniform_recursively(scene, 'Roughness', 0.8)
+        self.apply_backface_culling_recursively(scene, False)
+        self.scenegraph.Root.value.Children.value.append(scene)
+
     # applys a material uniform to all TriMeshNode instances below the specified start node
     def apply_material_uniform_recursively(self, start_node, uniform_name, uniform_value):
         if start_node.__class__.__name__ == "TriMeshNode":
@@ -90,3 +102,5 @@ class Scene:
 
         for child in start_node.Children.value:
             self.apply_backface_culling_recursively(child, boolean)
+
+

@@ -5,7 +5,7 @@ import avango
 import avango.gua
 
 # IP address of machine to which HMD is attached
-HMD_IP_ADDRESS = '141.54.147.57'
+HMD_IP_ADDRESS = '141.54.147.30'
 
 # Object colors
 OBJECT_COLORS = [avango.gua.Vec4(1.0, 0.0, 0.0, 1.0),
