@@ -1,8 +1,6 @@
 # VRProject
 River Analogy
 next steps:
-- define map
-- give multiple paths
-- get user input through controller
-- adjust for attaching the user to the path and give them relative freedom based on anchor, damping constant, viewing direction. 
+- define map with no forks
+- adjust for moving the user and not the center of the navigation coordinate system to the target. 
 

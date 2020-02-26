@@ -13,11 +13,10 @@ import math
 class VirtualRANavigation(avango.script.Script):
 
 	# input fields
-	speed = 2
 
 	# output field
-	sf_navigation_matrix = avango.gua.SFMatrix4()
-	sf_navigation_matrix.value = avango.gua.make_identity_mat()
+	#sf_navigation_matrix = avango.gua.SFMatrix4()
+	#sf_navigation_matrix.value = avango.gua.make_identity_mat()
 
 
 	def __init__(self):
@@ -36,7 +35,7 @@ class VirtualRANavigation(avango.script.Script):
 		self.always_evaluate(True)
 
 	def create_path(self):
-		self.path = {1:[(2,avango.gua.Vec3(-4,0,40))],2:[(3,avango.gua.Vec3(-10,0,0))],3:[(4,avango.gua.Vec3(3,0,5))],4:[(5,avango.gua.Vec3(3,0,5))],5:[(6,avango.gua.Vec3(3,0,5))],6:[(7,avango.gua.Vec3(3,0,0))]}
+		self.path = {}#{1:[(2,avango.gua.Vec3(-4,0,40))],2:[(3,avango.gua.Vec3(-10,0,0))],3:[(4,avango.gua.Vec3(3,0,5))],4:[(5,avango.gua.Vec3(3,0,5))],5:[(6,avango.gua.Vec3(3,0,5))],6:[(7,avango.gua.Vec3(3,0,0))]}
 
 	def end(self):
 		boolean = True
@@ -49,7 +48,7 @@ class VirtualRANavigation(avango.script.Script):
 			if (self.animation_start_pos != None):
 				direction_animation =  self.animation_target_pos - self.animation_start_pos
 				dist = math.sqrt(direction_animation.x**2+direction_animation.y**2+direction_animation.z**2)
-				total_time = dist / self.speed
+				total_time = dist / self.speed_control()
 				elapsed_time = time.time() - self.animation_start_time
 				fraction = elapsed_time / total_time
 				user_dist = self.head_node.Transform.value.get_translate() - self.navigation_node.Transform.value.get_translate()
@@ -69,8 +68,15 @@ class VirtualRANavigation(avango.script.Script):
 
 	def new_start(self):
 		print(self.cur_node)
-		movement_vector = self.path[self.cur_node][0][1]
+		new_node = self.select_node()
+		movement_vector = self.path[self.cur_node][new_node][1]
 		self.animation_target_pos = (self.navigation_node.Transform.value * avango.gua.make_trans_mat(movement_vector)).get_translate()
 		self.animation_start_pos = self.navigation_node.Transform.value.get_translate()
 		self.animation_start_time = time.time()
+
+	def select_node(self):
+		return 0
+
+	def speed_control(self):
+		return 2
 
