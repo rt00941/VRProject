@@ -28,6 +28,9 @@ class ViveViewingSetup:
         self.navigation_node = avango.gua.nodes.TransformNode(
             Name='navigation_node')
         self.scenegraph.Root.value.Children.value.append(self.navigation_node)
+        # user node
+        self.user_node = avango.gua.nodes.TransformNode(
+            Name='user_node')
 
         # screen nodes
         self.left_screen_node = avango.gua.nodes.ScreenNode(
@@ -40,16 +43,17 @@ class ViveViewingSetup:
         self.camera_node.SceneGraph.value = self.scenegraph.Name.value
         self.camera_node.EnableStereo.value = True
         self.camera_node.EnableFrustumCulling.value = False
-        self.camera_node.LeftScreenPath.value = '/navigation_node/Vive-HMD-User/left_screen_node'
-        self.camera_node.RightScreenPath.value = '/navigation_node/Vive-HMD-User/right_screen_node'
+        self.camera_node.LeftScreenPath.value = '/navigation_node/user_node/Vive-HMD-User/left_screen_node'
+        self.camera_node.RightScreenPath.value = '/navigation_node/user_node/Vive-HMD-User/right_screen_node'
         self.camera_node.BlackList.value = ['invisible']
         self.camera_node.Transform.connect_from(self.hmd_sensor.Matrix)
 
         # attach nodes
-        self.navigation_node.Children.value.append(self.camera_node)
+        self.navigation_node.Children.value.append(self.user_node)
+        self.user_node.Children.value.append(self.camera_node)
         self.camera_node.Children.value.append(self.left_screen_node)
         self.camera_node.Children.value.append(self.right_screen_node)
-        self.build_vehicle()
+        #self.build_vehicle()
 
         # controller transform nodes for external use
         self.controller1_transform = avango.gua.nodes.TransformNode(
@@ -107,7 +111,7 @@ class ViveViewingSetup:
         self.apply_material_uniform_recursively(vehicle, 'Emissivity', 0.5)
         self.apply_material_uniform_recursively(vehicle, 'Roughness', 0.8)
         self.apply_backface_culling_recursively(vehicle, False)
-        self.navigation_node.Children.value.append(vehicle)
+        self.user_node.Children.value.append(vehicle)
 
     # applys a material uniform to all TriMeshNode instances below the specified start node
     def apply_material_uniform_recursively(self, start_node, uniform_name, uniform_value):

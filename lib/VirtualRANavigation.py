@@ -13,7 +13,7 @@ import math
 class VirtualRANavigation(avango.script.Script):
 
 	# input fields
-
+	limit = 1
 	# output field
 	#sf_navigation_matrix = avango.gua.SFMatrix4()
 	#sf_navigation_matrix.value = avango.gua.make_identity_mat()
@@ -28,10 +28,11 @@ class VirtualRANavigation(avango.script.Script):
 		self.animation_target_pos = None
 
 
-	def set_inputs(self, scenegraph, navigation_node, head_node):
+	def set_inputs(self, scenegraph, navigation_node, head_node, user_node):
 		self.scenegraph = scenegraph
 		self.navigation_node = navigation_node
 		self.head_node = head_node
+		self.user_node = user_node
 		self.always_evaluate(True)
 
 	def create_path(self):
@@ -42,7 +43,7 @@ class VirtualRANavigation(avango.script.Script):
 
 	def evaluate(self):
 		if (self.cur_node == (len(self.path))+1):
-			self.always_evaluate(False)
+			#self.always_evaluate(False)
 			print("Stop")
 		else:
 			if (self.animation_start_pos != None):
@@ -52,7 +53,7 @@ class VirtualRANavigation(avango.script.Script):
 				elapsed_time = time.time() - self.animation_start_time
 				fraction = elapsed_time / total_time
 				user_dist = self.head_node.Transform.value.get_translate() - self.navigation_node.Transform.value.get_translate()
-				print(user_dist)
+				#print(user_dist)
 				self.navigation_node.Transform.value = avango.gua.make_trans_mat(self.animation_start_pos.x + fraction * direction_animation.x, self.animation_start_pos.y + fraction * direction_animation.y, self.animation_start_pos.z + fraction * direction_animation.z)
 				if (elapsed_time >= total_time):
 				    self.navigation_node.Transform.value = avango.gua.make_trans_mat(self.animation_target_pos.x, self.animation_target_pos.y, self.animation_target_pos.z)
@@ -62,6 +63,7 @@ class VirtualRANavigation(avango.script.Script):
 				    self.cur_node = self.path[self.cur_node][0][0]
 			else:
 				self.new_start()
+		self.user_movement()
 #		self.navigation_node.Transform.value *= avango.gua.make_trans_mat(movement_vector.x*0.1,movement_vector.y*0.1,movement_vector.z*0.1) 
 #		print(self.sf_navigation_matrix.value)
 #		self.cur_node = self.path[self.cur_node][0][0]
@@ -74,9 +76,26 @@ class VirtualRANavigation(avango.script.Script):
 		self.animation_start_pos = self.navigation_node.Transform.value.get_translate()
 		self.animation_start_time = time.time()
 
+	def user_movement(self):
+		to_travel = avango.gua.Vec3(0,0,-0.001)
+		#to_travel = avango.gua.make_rot_mat(self.head_node.WorldTransform.value.get_rotate_scale_corrected()) * avango.gua.make_trans_mat(to_travel)
+		#to_travel = to_travel.get_translate()
+		print(to_travel)
+		user_pos = self.head_node.Transform.value.get_translate()
+		pos = self.user_node.Transform.value.get_translate()
+		if ((pos.z <= self.limit) and (pos.z >= -self.limit)):
+			#if (self.user_node.WorldTransform.value.get_rotate_scale_corrected() != self.head_node.WorldTransform.value.get_rotate_scale_corrected()):
+			#	print('a')
+			#	self.user_node.WorldTransform.value = avango.gua.make_trans_mat(self.user_node.WorldTransform.value.get_translate()) * \
+			#	avango.gua.make_rot_mat(self.head_node.WorldTransform.value.get_rotate_scale_corrected()) * \
+			#	avango.gua.make_scale_mat(self.user_node.WorldTransform.value.get_scale())	
+			#self.user_node.Transform.value = self.user_node.Transform.value * avango.gua.make_rot_mat(self.head_node.WorldTransform.value.get_rotate_scale_corrected()) * avango.gua.make_trans_mat(to_travel)
+		#avango.gua.make_trans_mat(-user_pos.x,-user_pos.y,-user_pos.z) * 
+		
+
 	def select_node(self):
 		return 0
 
 	def speed_control(self):
-		return 2
+		return 0.5
 
