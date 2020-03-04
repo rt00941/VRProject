@@ -37,7 +37,7 @@ def start():
 
     # create navigation technique
     navigation_manager = VirtualRANavigation()
-    navigation_manager.set_inputs(scenegraph, viewing_setup.navigation_node, viewing_setup.camera_node, viewing_setup.user_node)
+    navigation_manager.set_inputs(scenegraph, viewing_setup.navigation_node, viewing_setup.camera_node, viewing_setup.user_node, viewing_setup.controller1_transform, viewing_setup.controller1_sensor)
 
     # print scenegraph
     print_graph(scenegraph.Root.value)

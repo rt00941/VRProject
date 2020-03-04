@@ -1,7 +1,6 @@
 # VRProject
 River Analogy
 next steps:
-- define map with forks
-- give option to select
-- adjust for the user 
+- define map with no forks
+- adjust for moving the user and not the center of the navigation coordinate system to the target. 
 

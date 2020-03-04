@@ -28,6 +28,7 @@ class ViveViewingSetup:
         self.navigation_node = avango.gua.nodes.TransformNode(
             Name='navigation_node')
         self.scenegraph.Root.value.Children.value.append(self.navigation_node)
+        self.navigation_node.Transform.value = avango.gua.make_trans_mat(0,0,10)
         # user node
         self.user_node = avango.gua.nodes.TransformNode(
             Name='user_node')
@@ -53,7 +54,6 @@ class ViveViewingSetup:
         self.user_node.Children.value.append(self.camera_node)
         self.camera_node.Children.value.append(self.left_screen_node)
         self.camera_node.Children.value.append(self.right_screen_node)
-        #self.build_vehicle()
 
         # controller transform nodes for external use
         self.controller1_transform = avango.gua.nodes.TransformNode(
@@ -98,20 +98,6 @@ class ViveViewingSetup:
     # registers a pipeline description in the class Renderer with the camera node
     def register_pipeline_description(self, pipeline_description):
         self.camera_node.PipelineDescription.value = pipeline_description
-
-    # adds vehicle to user
-    def build_vehicle(self):
-        loader = avango.gua.nodes.TriMeshLoader()
-        vehicle = loader.create_geometry_from_file('vehicle',
-                                                      'data/objects/vehicle/skate.obj',
-                                                      avango.gua.LoaderFlags.DEFAULTS)
-        vehicle.Transform.value = avango.gua.make_trans_mat(0.0, -2.0, 0.0) * \
-            avango.gua.make_rot_mat(0, 0, 0, 0) * \
-            avango.gua.make_scale_mat(0.50)
-        self.apply_material_uniform_recursively(vehicle, 'Emissivity', 0.5)
-        self.apply_material_uniform_recursively(vehicle, 'Roughness', 0.8)
-        self.apply_backface_culling_recursively(vehicle, False)
-        self.user_node.Children.value.append(vehicle)
 
     # applys a material uniform to all TriMeshNode instances below the specified start node
     def apply_material_uniform_recursively(self, start_node, uniform_name, uniform_value):
