@@ -99,7 +99,8 @@ class Scene:
     def build_island(self):
         self.island = self.loader.create_geometry_from_file('island_model',
                                                             'data/objects/island.obj',
-                                                            avango.gua.LoaderFlags.LOAD_MATERIALS)
+                                                            avango.gua.LoaderFlags.LOAD_MATERIALS |
+                                                            avango.gua.LoaderFlags.MAKE_PICKABLE)
         self.apply_material_uniform_recursively(self.island, 'Emissivity', 0.3)
         self.apply_material_uniform_recursively(self.island, 'Roughness', 0.8)
         self.apply_material_uniform_recursively(self.island, 'Metalness', 0.0)

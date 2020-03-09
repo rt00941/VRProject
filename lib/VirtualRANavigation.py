@@ -5,10 +5,12 @@ import avango
 import avango.daemon
 import avango.gua
 import avango.script
+from avango.script import field_has_changed
 
 #
 import time
 import math
+from lib.Picker import *
 
 class VirtualRANavigation(avango.script.Script):
 
@@ -51,16 +53,32 @@ class VirtualRANavigation(avango.script.Script):
 		self.sf_controller_matrix.connect_from(self.controller_node.Transform)
 		self.sf_rocker.connect_from(self.controller_sensor.Value3)
 		self.sf_grip_button.connect_from(self.controller_sensor.Button2)
+		
+	def run(self):
+		print("Start")
 		self.always_evaluate(self.boolean)
 		
 	def create_path(self):
 		self.path = {}
-		self.path = {1:[(2,avango.gua.Vec3(-4,0,-10))]}
+		self.path = {1:[(2,avango.gua.Vec3(-4,0,-10))],2:[(3,avango.gua.Vec3(-4,0,-10))],3:[(4,avango.gua.Vec3(-4,0,-10))],4:[(5,avango.gua.Vec3(-4,0,-10))],5:[(6,avango.gua.Vec3(-4,0,-10))],6:[(7,avango.gua.Vec3(-4,0,-10))]}
 
 	def evaluate(self):
+		# Ground Following
+		position = self.head_node.WorldTransform.value.get_translate()
+		trans_y = 0
+		height_figure = 2
+		picker = Picker(self.scenegraph)
+		result = picker.compute_pick_result(position,avango.gua.Vec3(0.0, -1.0, 0.0),10,['invisible'])
+
+		if (result != None):
+		    if (result.Distance.value < height_figure):
+		        trans_y += 0.01
+		    elif (result.Distance.value > height_figure):
+		        trans_y -= 0.01
+
 		if (self.cur_node >= (len(self.path))+1):
 			self.boolean = False
-			#print("Stop")
+			print("Stop")
 		else:
 			if (self.animation_start_pos != None):
 				direction_animation =  self.animation_target_pos - self.animation_start_pos
@@ -68,16 +86,16 @@ class VirtualRANavigation(avango.script.Script):
 				total_time = dist / self.speed_control_platform()
 				elapsed_time = time.time() - self.animation_start_time
 				fraction = elapsed_time / total_time
-				self.navigation_node.Transform.value = avango.gua.make_trans_mat(self.animation_start_pos.x + fraction * direction_animation.x, self.animation_start_pos.y + fraction * direction_animation.y, self.animation_start_pos.z + fraction * direction_animation.z)
+				self.navigation_node.Transform.value = avango.gua.make_trans_mat(self.animation_start_pos.x + fraction * direction_animation.x, trans_y, self.animation_start_pos.z + fraction * direction_animation.z)
 				if (elapsed_time >= total_time):
-				    self.navigation_node.Transform.value = avango.gua.make_trans_mat(self.animation_target_pos.x, self.animation_target_pos.y, self.animation_target_pos.z)
+				    self.navigation_node.Transform.value = avango.gua.make_trans_mat(self.animation_target_pos.x, trans_y, self.animation_target_pos.z)
 				    self.animation_start_pos = None
 				    self.animation_start_time = None
 				    self.animation_target_pos = None
 				    self.cur_node = self.path[self.cur_node][0][0]
-				self.user_movement()
 			else:
-				self.new_start()
+				self.new_start()			
+		self.always_evaluate(self.boolean)
 
 	def new_start(self):
 		print(self.cur_node)
@@ -116,8 +134,17 @@ class VirtualRANavigation(avango.script.Script):
 		base = avango.gua.make_identity_mat()
 		spring_length = self.user_node.Transform.value.get_translate() - base.get_translate()
 		dist = math.sqrt(spring_length.x ** 2 + spring_length.y ** 2 + spring_length.z ** 2)
-		print(dist)
+		#print(dist)
 		if dist != 0:
 			return self.damping_const/dist
 		else:
 			return self.damping_const
+
+	@field_has_changed(sf_rocker)
+	def sf_rocker_changed(self):
+		if self.sf_rocker.value:
+			print("user moves")
+			self.user_movement()
+		else:
+			print("at center")
+			self.user_node.Transform.value = avango.gua.make_identity_mat()
