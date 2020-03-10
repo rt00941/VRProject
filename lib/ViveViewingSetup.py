@@ -60,7 +60,7 @@ class ViveViewingSetup:
             Name='controller_node')
         self.controller1_transform.Transform.connect_from(
             self.controller1_sensor.Matrix)
-        self.navigation_node.Children.value.append(self.controller1_transform)
+        self.user_node.Children.value.append(self.controller1_transform)
 
         # controller geometries
         self.controller1 = self.create_controller_object()

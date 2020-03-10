@@ -25,7 +25,7 @@ class VirtualRANavigation(avango.script.Script):
 	sf_grip_button.value = False
 
 	# constant fields
-	damping_const = 1
+	damping_const = 5
 
 	# output field
 	sf_navigation_matrix = avango.gua.SFMatrix4()
@@ -63,7 +63,14 @@ class VirtualRANavigation(avango.script.Script):
 		self.path = {1:[(2,avango.gua.Vec3(-4,0,-10))],2:[(3,avango.gua.Vec3(20,0,-10))],3:[(4,avango.gua.Vec3(-4,0,-10))],4:[(5,avango.gua.Vec3(-4,0,-10))],5:[(6,avango.gua.Vec3(-4,0,-10))],6:[(7,avango.gua.Vec3(-4,0,-10))]}
 
 	def evaluate(self):
-		# Ground Following
+
+		if self.sf_rocker.value:
+			print("user moves")
+			self.user_movement()
+		else:
+			print("at center")
+			self.user_node.Transform.value = avango.gua.make_identity_mat()
+
 		position = self.head_node.WorldTransform.value.get_translate()
 		trans_y = 0
 		height_figure = 2
@@ -71,12 +78,10 @@ class VirtualRANavigation(avango.script.Script):
 		result = picker.compute_pick_result(position,avango.gua.Vec3(0.0, -1.0, 0.0),10,['invisible'])
 
 		if (result != None):
-			print(result.Distance.value)
 			if (result.Distance.value < height_figure):
 			    trans_y += 0.01
 			elif (result.Distance.value > height_figure):
 			    trans_y -= 0.01
-		print(trans_y)
 
 		if (self.cur_node >= (len(self.path))+1):
 			self.boolean = False
@@ -114,19 +119,30 @@ class VirtualRANavigation(avango.script.Script):
 	def user_movement(self):
 		# compute movement vector
 		now = time.time()
-		print(self.speed_control_user())
-		#speed = self.sf_rocker.value * self.speed_control_user() * (now - self.lf_time)
-		speed = self.speed_control_user()
+
+		position = self.head_node.WorldTransform.value.get_translate()
+		trans_y = 0
+		height_figure = 2
+		picker = Picker(self.scenegraph)
+		result = picker.compute_pick_result(position,avango.gua.Vec3(0.0, -1.0, 0.0),100,['invisible'])
+
+		if (result != None):
+			if (result.Distance.value < height_figure):
+			    trans_y += 0.01
+			elif (result.Distance.value > height_figure):
+			    trans_y -= 0.01
+
+		speed = self.sf_rocker.value * self.speed_control_user() * (now - self.lf_time)
 		forward_matrix = self.controller_node.WorldTransform.value * \
 		    avango.gua.make_trans_mat(0.0, 0.0, -1.0)
 		forward_vector = forward_matrix.get_translate() - \
 		    self.controller_node.WorldTransform.value.get_translate()
-
-
 		forward_vector.normalize()
 		movement_vector = forward_vector * speed
+
 		# restrict movements to ground plane
 		movement_vector.y = 0.0
+		print(movement_vector)
 		self.user_node.Transform.value *= avango.gua.make_trans_mat(movement_vector)
 		self.lf_time = now
 		
@@ -134,23 +150,13 @@ class VirtualRANavigation(avango.script.Script):
 		return 0
 
 	def speed_control_platform(self):
-		return 1
+		return 2
 
 	def speed_control_user(self):
 		base = avango.gua.make_identity_mat()
 		spring_length = self.user_node.Transform.value.get_translate() - base.get_translate()
 		dist = math.sqrt(spring_length.x ** 2 + spring_length.y ** 2 + spring_length.z ** 2)
-		#print(dist)
 		if dist != 0:
 			return self.damping_const/dist
 		else:
 			return self.damping_const
-
-	@field_has_changed(sf_rocker)
-	def sf_rocker_changed(self):
-		if self.sf_rocker.value:
-			print("user moves")
-			self.user_movement()
-		else:
-			print("at center")
-			self.user_node.Transform.value = avango.gua.make_identity_mat()
