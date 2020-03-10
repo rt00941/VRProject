@@ -24,9 +24,8 @@ class Scene:
 
         # build scene content
         self.build_light()
-        self.build_lamp()
-        self.build_island()
-        #self.build_objects()
+        self.build_floor()
+        self.build_objects()
 
 
     # adds a light to the scenegraph's root node
@@ -41,34 +40,18 @@ class Scene:
             avango.gua.make_scale_mat(1000.0)
         self.scenegraph.Root.value.Children.value.append(spotlight)
 
-    def build_lamp(self):
-        self.lamp_node = avango.gua.nodes.LightNode(Type=avango.gua.LightType.SPOT,
-                                                    Name='lamp',
-                                                    EnableShadows=True,
-                                                    Brightness=30.0,
-                                                    ShadowMapSize=4096,
-                                                    ShadowOffset=0.0001)
-        self.lamp_node.Transform.value = avango.gua.make_trans_mat(5, 25, -5) * \
-            avango.gua.make_rot_mat(45, 0, 1, 0) * \
-            avango.gua.make_rot_mat(-80, 1, 0, 0) * \
-            avango.gua.make_scale_mat(500, 500, 100)
-        self.lamp_node.ShadowNearClippingInSunDirection.value = \
-            self.lamp_node.ShadowNearClippingInSunDirection.value * \
-            (1.0 / self.lamp_node.Transform.value.get_scale().z)
-        self.lamp_node.ShadowFarClippingInSunDirection.value = \
-            self.lamp_node.ShadowFarClippingInSunDirection.value * \
-            (1.0 / self.lamp_node.Transform.value.get_scale().z)
-        self.scenegraph.Root.value.Children.value.append(self.lamp_node)
-
     # adds the floor geometry to the scenegraph's root node
     def build_floor(self):
         floor = self.loader.create_geometry_from_file('floor',
-                                                      'data/objects/plane.obj',
-                                                      avango.gua.LoaderFlags.DEFAULTS)
-        self.apply_material_uniform_recursively(
-            floor, 'ColorMap', 'data/textures/tiles.tif')
-        self.apply_material_uniform_recursively(floor, 'Roughness', 0.5)
-        floor.Transform.value = avango.gua.make_scale_mat(100.0)
+                                                      'data/objects/floor.obj',
+                                                      avango.gua.LoaderFlags.DEFAULTS |
+                                                      avango.gua.LoaderFlags.LOAD_MATERIALS |
+                                                      avango.gua.LoaderFlags.MAKE_PICKABLE)
+        self.apply_material_uniform_recursively(floor, 'ColorMap', 'data/textures/Color.tif')
+        self.apply_material_uniform_recursively(floor, 'Roughness', 'data/textures/Normal.tif')
+        self.apply_material_uniform_recursively(floor, 'Emissivity', 'data/textures/Light_Map.tif')
+        self.apply_material_uniform_recursively(floor, 'Normal', 'data/textures/Height.tif')
+        floor.Transform.value = avango.gua.make_scale_mat(0.10)
         self.scenegraph.Root.value.Children.value.append(floor)
 
     # adds some objects to the scenegraph's root node
@@ -97,8 +80,8 @@ class Scene:
 
     # adds an island model to the scenegraph's root node
     def build_island(self):
-        self.island = self.loader.create_geometry_from_file('island_model',
-                                                            'data/objects/island.obj',
+        self.island = self.loader.create_geometry_from_file('map',
+                                                            'data/objects/Island/Island.obj',
                                                             avango.gua.LoaderFlags.LOAD_MATERIALS |
                                                             avango.gua.LoaderFlags.MAKE_PICKABLE)
         self.apply_material_uniform_recursively(self.island, 'Emissivity', 0.3)

@@ -60,7 +60,7 @@ class VirtualRANavigation(avango.script.Script):
 		
 	def create_path(self):
 		self.path = {}
-		self.path = {1:[(2,avango.gua.Vec3(-4,0,-10))],2:[(3,avango.gua.Vec3(-4,0,-10))],3:[(4,avango.gua.Vec3(-4,0,-10))],4:[(5,avango.gua.Vec3(-4,0,-10))],5:[(6,avango.gua.Vec3(-4,0,-10))],6:[(7,avango.gua.Vec3(-4,0,-10))]}
+		self.path = {1:[(2,avango.gua.Vec3(-4,0,-10))],2:[(3,avango.gua.Vec3(20,0,-10))],3:[(4,avango.gua.Vec3(-4,0,-10))],4:[(5,avango.gua.Vec3(-4,0,-10))],5:[(6,avango.gua.Vec3(-4,0,-10))],6:[(7,avango.gua.Vec3(-4,0,-10))]}
 
 	def evaluate(self):
 		# Ground Following
@@ -71,24 +71,27 @@ class VirtualRANavigation(avango.script.Script):
 		result = picker.compute_pick_result(position,avango.gua.Vec3(0.0, -1.0, 0.0),10,['invisible'])
 
 		if (result != None):
-		    if (result.Distance.value < height_figure):
-		        trans_y += 0.01
-		    elif (result.Distance.value > height_figure):
-		        trans_y -= 0.01
+			print(result.Distance.value)
+			if (result.Distance.value < height_figure):
+			    trans_y += 0.01
+			elif (result.Distance.value > height_figure):
+			    trans_y -= 0.01
+		print(trans_y)
 
 		if (self.cur_node >= (len(self.path))+1):
 			self.boolean = False
 			print("Stop")
 		else:
 			if (self.animation_start_pos != None):
+				self.animation_target_pos.y += trans_y
 				direction_animation =  self.animation_target_pos - self.animation_start_pos
-				dist = math.sqrt(direction_animation.x**2+direction_animation.y**2+direction_animation.z**2)
+				dist = math.sqrt(direction_animation.x**2+direction_animation.z**2)
 				total_time = dist / self.speed_control_platform()
 				elapsed_time = time.time() - self.animation_start_time
 				fraction = elapsed_time / total_time
-				self.navigation_node.Transform.value = avango.gua.make_trans_mat(self.animation_start_pos.x + fraction * direction_animation.x, trans_y, self.animation_start_pos.z + fraction * direction_animation.z)
+				self.navigation_node.Transform.value = avango.gua.make_trans_mat(self.animation_start_pos.x + fraction * direction_animation.x, self.animation_start_pos.y + fraction * direction_animation.y, self.animation_start_pos.z + fraction * direction_animation.z)
 				if (elapsed_time >= total_time):
-				    self.navigation_node.Transform.value = avango.gua.make_trans_mat(self.animation_target_pos.x, trans_y, self.animation_target_pos.z)
+				    self.navigation_node.Transform.value = avango.gua.make_trans_mat(self.animation_target_pos.x, self.animation_target_pos.y, self.animation_target_pos.z)
 				    self.animation_start_pos = None
 				    self.animation_start_time = None
 				    self.animation_target_pos = None
@@ -112,11 +115,14 @@ class VirtualRANavigation(avango.script.Script):
 		# compute movement vector
 		now = time.time()
 		print(self.speed_control_user())
-		speed = self.sf_rocker.value * self.speed_control_user() * (now - self.lf_time)
+		#speed = self.sf_rocker.value * self.speed_control_user() * (now - self.lf_time)
+		speed = self.speed_control_user()
 		forward_matrix = self.controller_node.WorldTransform.value * \
 		    avango.gua.make_trans_mat(0.0, 0.0, -1.0)
 		forward_vector = forward_matrix.get_translate() - \
 		    self.controller_node.WorldTransform.value.get_translate()
+
+
 		forward_vector.normalize()
 		movement_vector = forward_vector * speed
 		# restrict movements to ground plane
