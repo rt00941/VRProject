@@ -28,7 +28,7 @@ class ViveViewingSetup:
         self.navigation_node = avango.gua.nodes.TransformNode(
             Name='navigation_node')
         self.scenegraph.Root.value.Children.value.append(self.navigation_node)
-        self.navigation_node.Transform.value = avango.gua.make_trans_mat(0,0,10)
+        self.navigation_node.Transform.value = avango.gua.make_trans_mat(-24,0,-24)
         # user node
         self.user_node = avango.gua.nodes.TransformNode(
             Name='user_node')
