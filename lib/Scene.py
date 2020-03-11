@@ -28,19 +28,6 @@ class Scene:
         self.build_platform()
         self.build_objects()
 
-
-    # # adds a light to the scenegraph's root node
-    # def build_light(self):
-    #     spotlight = avango.gua.nodes.LightNode(Name='spotlight')
-    #     spotlight.Type.value = avango.gua.LightType.SPOT
-    #     spotlight.Color.value = avango.gua.Color(1.0, 1.0, 0.9)
-    #     spotlight.Brightness.value = 30.0
-    #     spotlight.Falloff.value = 0.7
-    #     spotlight.Transform.value = avango.gua.make_trans_mat(0.0, 400.0, 0.0) * \
-    #         avango.gua.make_rot_mat(-90, 1, 0, 0) * \
-    #         avango.gua.make_scale_mat(1000.0)
-    #     self.scenegraph.Root.value.Children.value.append(spotlight)
-
     def build_light(self):
         enable_shadows = True
         if sys.platform.startswith('win'):
