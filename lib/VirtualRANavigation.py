@@ -38,6 +38,7 @@ class VirtualRANavigation(avango.script.Script):
 	def __init__(self):
 		self.super(VirtualRANavigation).__init__()
 		self.cur_node = 1
+		self.new_node = 0
 		self.boolean = True
 		self.create_path()
 		self.lf_time = time.time()
@@ -103,7 +104,8 @@ class VirtualRANavigation(avango.script.Script):
 			    trans_y -= 0.01
 
 		# Conditions for navigating on the path
-		if (self.cur_node >= (len(self.path))+1):
+		if ((self.cur_node >= (len(self.path))+1) & (self.boolean)):
+			print("current node is: ", self.cur_node)
 			self.boolean = False
 		else:
 			if (self.animation_start_pos != None):
@@ -119,19 +121,16 @@ class VirtualRANavigation(avango.script.Script):
 				    self.animation_start_pos = None
 				    self.animation_start_time = None
 				    self.animation_target_pos = None
-				    self.cur_node = self.path[self.cur_node][0][0]
+				    self.cur_node = self.path[self.cur_node][self.new_node][0]
 			else:
-				self.new_start()
-				print(self.cur_node)			
+				print("current node is: ", self.cur_node)
+				self.new_start()			
 		self.always_evaluate(self.boolean)
 
 	# Selecting the navigation to a new node
 	def new_start(self):
-		if (len(self.path[self.cur_node]) > 1):
-			self.build_center_circle()
-			print("Choice")
-		new_node = self.select_node()
-		self.animation_target_pos = avango.gua.make_trans_mat(self.path[self.cur_node][new_node][1]).get_translate()
+		self.new_node = self.select_node()
+		self.animation_target_pos = avango.gua.make_trans_mat(self.path[self.cur_node][self.new_node][1]).get_translate()
 		self.animation_start_pos = self.navigation_node.Transform.value.get_translate()
 		self.animation_start_time = time.time()
 
@@ -151,10 +150,16 @@ class VirtualRANavigation(avango.script.Script):
 		self.lf_time = now
 		
 	def select_node(self):
-		return 0
+		if (len(self.path[self.cur_node]) == 2):
+			if (self.head_node.Transform.value.get_rotate().w > 0.3):
+				return 0
+			else:
+				return 1
+		else:
+			return 0
 
 	def speed_control_navigation(self):
-		return self.path[self.cur_node][self.select_node()][2]
+		return self.path[self.cur_node][self.new_node][2]
 
 
 	def speed_control_user(self):
@@ -167,26 +172,4 @@ class VirtualRANavigation(avango.script.Script):
 			return self.damping_const/dist
 		else:
 			return self.damping_const
-
-	# builds the center circle for position-directed steering
-	def build_center_circle(self):
-			loader = avango.gua.nodes.TriMeshLoader()
-			self.center_circle = loader.create_geometry_from_file(
-				'center-circle', 'data/objects/sphere.obj', avango.gua.LoaderFlags.DEFAULTS)
-			self.center_circle.Transform.value = avango.gua.make_trans_mat(2, 1, 2) * \
-				avango.gua.make_rot_mat(-90, 1, 0, 0) * \
-				avango.gua.make_scale_mat(0.5)
-			self.center_circle.Material.value.set_uniform(
-				'Color', avango.gua.Vec4(0.2, 0.5, 0.65, 1.0))
-			self.center_circle.Material.value.set_uniform('Roughness', 0.8)
-			self.navigation_node.Children.value.append(self.center_circle)
 		
-	# called whenever sf_grip_button changes
-	@field_has_changed(sf_grip_button)
-	def sf_grip_button_changed(self):
-		print(self.sf_grip_button.value)
-
-	# called whenever sf_touchpad_button changes
-	@field_has_changed(sf_touchpad_button)
-	def sf_touchpad_button_changed(self):
-		print(self.sf_touchpad_button.value)
