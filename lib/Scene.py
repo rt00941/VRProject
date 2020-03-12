@@ -62,7 +62,6 @@ class Scene:
             self.park, 'Metalness', 0.0)
         self.apply_backface_culling_recursively(self.park, False)
         self.park.Transform.value = avango.gua.make_scale_mat(2.5)
-        print("park Size", self.park.WorldTransform.value.get_scale())
         self.scenegraph.Root.value.Children.value.append(self.park)
 
     # adds a moving platform to the scenegraph's root node

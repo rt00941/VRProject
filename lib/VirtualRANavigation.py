@@ -66,10 +66,14 @@ class VirtualRANavigation(avango.script.Script):
 		
 	def create_path(self):
 		self.path = {}
-		self.path = {1:[(2,avango.gua.Vec3(-24,0,-16),2)],2:[(3,avango.gua.Vec3(-5,0,-15),2)],3:[(4,avango.gua.Vec3(-5,0,-5),1),(5,avango.gua.Vec3(0,0,-5),1)]}
+		self.path = {1:[(2,avango.gua.Vec3(-24,0,-16),2)],2:[(3,avango.gua.Vec3(-5,0,-15),2)],3:[(4,avango.gua.Vec3(-5,0,6),1.5),(10,avango.gua.Vec3(5,0,0),1.5)],
+					4:[(5,avango.gua.Vec3(-13,0,6),2)],5:[(6,avango.gua.Vec3(-13,0,23),1.5),(8,avango.gua.Vec3(-13,0,10),1.5)], 6:[(7,avango.gua.Vec3(23,0,23),1.5)],
+					7:[(11,avango.gua.Vec3(23,0,0),1.5)], 8:[(9,avango.gua.Vec3(23,0,10),1.5)], 9:[(12,avango.gua.Vec3(23,0,-9),1.5)], 
+					10:[(11,avango.gua.Vec3(23,0,0),1.5)], 11:[(12,avango.gua.Vec3(23,0,-9),2)], 12:[(13,avango.gua.Vec3(15,0,-10),2)], 
+					13:[(14,avango.gua.Vec3(15,0,-18),2)], 14:[(15,avango.gua.Vec3(23,0,-17),2)], 15:[(16,avango.gua.Vec3(23,0,-11),2)], 
+					16:[(17,avango.gua.Vec3(13,0,-11),2)]}
 
 	def evaluate(self):
-
 		# User can move where they point the controller when they press the rocker button
 		if self.sf_rocker.value:
 			self.user_movement()
@@ -104,10 +108,10 @@ class VirtualRANavigation(avango.script.Script):
 			    trans_y -= 0.01
 
 		# Conditions for navigating on the path
-		if ((self.cur_node >= (len(self.path))+1) & (self.boolean)):
+		if ((self.cur_node > (len(self.path))) & (self.boolean)):
 			print("current node is: ", self.cur_node)
 			self.boolean = False
-		else:
+		elif (self.boolean):
 			if (self.animation_start_pos != None):
 				self.animation_target_pos.y += trans_y
 				direction_animation =  self.animation_target_pos - self.animation_start_pos
@@ -151,7 +155,8 @@ class VirtualRANavigation(avango.script.Script):
 		
 	def select_node(self):
 		if (len(self.path[self.cur_node]) == 2):
-			if (self.head_node.Transform.value.get_rotate().w > 0.3):
+			print("CHOICE")
+			if (self.head_node.Transform.value.get_rotate().w > 0.1):
 				return 0
 			else:
 				return 1
